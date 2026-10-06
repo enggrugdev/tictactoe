@@ -1,0 +1,25 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        ".read": "auth != null && (!data.exists() || data.child('status').val() == 'waiting' || data.child('players').child('X').val() == auth.uid || data.child('players').child('O').val() == auth.uid)",
+        ".write": "auth != null && ((!data.exists() && newData.child('players').child('X').val() == auth.uid) || (data.child('status').val() == 'waiting' && data.child('players').child('O').val() == null && newData.child('players').child('O').val() == auth.uid && newData.child('players').child('X').val() == data.child('players').child('X').val() && newData.child('status').val() == 'playing') || (data.child('players').child('X').val() == auth.uid && data.child('status').val() == 'playing' && data.child('turn').val() == 'X') || (data.child('players').child('O').val() == auth.uid && data.child('status').val() == 'playing' && data.child('turn').val() == 'O') || (data.child('status').val() == 'finished' && newData.child('status').val() == 'playing' && (data.child('players').child('X').val() == auth.uid || data.child('players').child('O').val() == auth.uid)))",
+        ".validate": "newData.hasChildren(['board', 'turn', 'status', 'winner', 'players', 'createdAt']) && newData.child('board').numChildren() == 9 && (newData.child('turn').val() == 'X' || newData.child('turn').val() == 'O') && (newData.child('status').val() == 'waiting' || newData.child('status').val() == 'playing' || newData.child('status').val() == 'finished') && (newData.child('winner').val() == 'X' || newData.child('winner').val() == 'O' || newData.child('winner').val() == '')",
+        "board": {
+          "$cell": {
+            ".validate": "($cell.matches(/^(0|1|2|3|4|5|6|7|8)$/)) && (newData.val() == '' || newData.val() == 'X' || newData.val() == 'O') && (!root.child('rooms').child($roomId).exists() || newData.val() == data.val() || (data.val() == '' && newData.val() == root.child('rooms').child($roomId).child('turn').val() && ((auth.uid == root.child('rooms').child($roomId).child('players').child('X').val() && root.child('rooms').child($roomId).child('turn').val() == 'X') || (auth.uid == root.child('rooms').child($roomId).child('players').child('O').val() && root.child('rooms').child($roomId).child('turn').val() == 'O'))) || (newData.val() == '' && root.child('rooms').child($roomId).child('status').val() == 'finished' && (auth.uid == root.child('rooms').child($roomId).child('players').child('X').val() || auth.uid == root.child('rooms').child($roomId).child('players').child('O').val())))"
+          }
+        },
+        "players": {
+          "X": { ".validate": "(!data.exists() && newData.val() == auth.uid) || newData.val() == data.val()" },
+          "O": { ".validate": "(!data.exists() && newData.val() == auth.uid && root.child('rooms').child($roomId).child('status').val() == 'waiting') || newData.val() == data.val()" }
+        },
+        "turn": { ".validate": "(!data.exists() && newData.val() == 'X') || (data.val() == newData.val() && root.child('rooms').child($roomId).child('status').val() == 'waiting') || (data.val() == 'X' && newData.val() == 'O' && auth.uid == root.child('rooms').child($roomId).child('players').child('X').val()) || (data.val() == 'O' && newData.val() == 'X' && auth.uid == root.child('rooms').child($roomId).child('players').child('O').val()) || (root.child('rooms').child($roomId).child('status').val() == 'finished' && newData.val() == 'X' && (auth.uid == root.child('rooms').child($roomId).child('players').child('X').val() || auth.uid == root.child('rooms').child($roomId).child('players').child('O').val()))" },
+        "status": { ".validate": "newData.val() == 'waiting' || newData.val() == 'playing' || newData.val() == 'finished'" },
+        "winner": { ".validate": "newData.val() == '' || newData.val() == 'X' || newData.val() == 'O'" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
